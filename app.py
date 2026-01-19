@@ -69,8 +69,6 @@ client_sales = sales.groupby('client')['amount_sale'].sum()
 client_returns = returns.groupby('client')['amount_return'].sum()
 client_profit = (client_sales - client_returns).fillna(0).reset_index()
 client_profit.columns = ['client', 'net_profit']
-
-# Foyda / zarar bo‘yicha toifalash
 client_profit['status'] = np.where(client_profit['net_profit'] > 0, 'FOYDA', 'ZARAR')
 
 # ==========================
@@ -86,10 +84,15 @@ fig_daily = px.pie(
     title="Kunlik foyda va zarar ulushi",
     color='status',
     color_discrete_map={'FOYDA':'green', 'ZARAR':'red'},
-    hover_data={'net_profit':':,.2f'}
+    hover_data=['net_profit']  # faqat ustun nomi
+)
+# Sonlarni diagrammada 2 decimal bilan ko'rsatish
+fig_daily.update_traces(
+    textposition='inside',
+    texttemplate='%{label}: %{value:,.2f}'
 )
 st.plotly_chart(fig_daily, use_container_width=True)
-st.markdown("💡 Dumaloq diagramda yashil → foyda, qizil → zarar. Bosilganda tafsilot ko‘rinadi.")
+st.markdown("💡 Yashil → foyda, Qizil → zarar. Hover va bosilganda tafsilot ko‘rinadi.")
 
 # ==========================
 # 6. Diagramma 2: Klient kesimi
@@ -104,17 +107,20 @@ fig_client = px.pie(
     title="Klientlar bo‘yicha sof foyda va zarar",
     color='status',
     color_discrete_map={'FOYDA':'green', 'ZARAR':'red'},
-    hover_data={'net_profit':':,.2f'}
+    hover_data=['net_profit']
+)
+fig_client.update_traces(
+    textposition='inside',
+    texttemplate='%{label}: %{value:,.2f}'
 )
 st.plotly_chart(fig_client, use_container_width=True)
-st.markdown("💡 Dumaloq diagramda yashil → foyda, qizil → zarar. Bosilganda tafsilot ko‘rinadi.")
+st.markdown("💡 Yashil → foyda, Qizil → zarar. Hover va bosilganda tafsilot ko‘rinadi.")
 
 # ==========================
-# 7. Klient individual diagramma
+# 7. Individual klientlar diagrammasi
 # ==========================
 st.subheader("👤 Individual klientlar tafsiloti")
 selected_status = st.radio("Foyda yoki zarar klientlar", options=['FOYDA', 'ZARAR'])
-
 filtered_clients = client_profit[client_profit['status'] == selected_status]
 
 fig_client_individual = px.pie(
@@ -122,7 +128,11 @@ fig_client_individual = px.pie(
     values='net_profit',
     names='client',
     title=f"{selected_status} klientlar bo‘yicha ulush",
-    hover_data={'net_profit':':,.2f'}
+    hover_data=['net_profit']
+)
+fig_client_individual.update_traces(
+    textposition='inside',
+    texttemplate='%{label}: %{value:,.2f}'
 )
 st.plotly_chart(fig_client_individual, use_container_width=True)
 st.markdown("💡 Bosilganda klient nomi va net foydasi ko‘rinadi.")
